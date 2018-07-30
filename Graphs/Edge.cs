@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.Contracts;
 
 namespace EvImps.Graphs
 {
@@ -9,6 +10,8 @@ namespace EvImps.Graphs
         public int Weight { get; }
         public Edge(Verticle v, Verticle u, int w=1)
         {
+			Contract.Requires(v!=null);
+			Contract.Requires(u!=null);
             From = v;
             To = u;
             Weight = w;

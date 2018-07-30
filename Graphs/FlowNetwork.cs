@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Linq;
 
 namespace EvImps.Graphs
 {
     public class FlowNetwork
     {
-		public Graph G {get;set;}
+		public Graph G {get;private set;}
 		public Func<Edge, int> c;
 		public string sId;
 		public string tId;
@@ -27,6 +28,7 @@ namespace EvImps.Graphs
 
 		public Func<Edge,int> EdmondKarp(Func<Edge,int> f)
 		{
+			Contract.Requires(f!=null);
 			FlowNetwork Nf = BuildResidualNetwork(f);
             Nf.G.Bfs(sId);
             List<Edge> path;
@@ -101,6 +103,7 @@ namespace EvImps.Graphs
 
 		public Func<Edge,int> Dinitz(Func<Edge,int> f)
 		{
+			Contract.Requires(f!=null);
 			FlowNetwork Nf = BuildResidualNetwork(f);
             Nf.G.Bfs(sId);
 			FlowNetwork Lf = BuildLayeredNetwork(Nf);
@@ -181,6 +184,7 @@ namespace EvImps.Graphs
 
 		public bool IsValidFlow(Func<Edge,int> f)
 		{
+			Contract.Requires(f!=null);
 			foreach(Edge e in G.Edges)
 				if( f(e) != -f(new Edge(e.To,e.From)))
 				   return false;

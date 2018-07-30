@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Linq;
 
 namespace EvImps.Graphs
@@ -25,6 +26,7 @@ namespace EvImps.Graphs
 
         public Verticle(string id)
         {
+			Contract.Requires(id!=null);
             edgesIn = new Dictionary<string,Edge>();
 			edgesOut = new Dictionary<string,Edge>();
             Visited = false;
@@ -38,24 +40,35 @@ namespace EvImps.Graphs
             ParentEdge = null;
         }
 
-        public void AddInNeighbor(Edge e) =>
-		edgesIn.Add(e.From.Id,e);
+		public void AddInNeighbor(Edge e){
+			Contract.Requires(e!=null);
+			Contract.Ensures(Id.Equals(e.To.Id));
+            Contract.Ensures(IsNeighborIn(e.From.Id));
+		    edgesIn.Add(e.From.Id,e);
+		}
         
-        
-        public void AddOutNeighbor(Edge e) =>
-	    edgesOut.Add(e.To.Id,e);
+		public void AddOutNeighbor(Edge e){
+			Contract.Requires(e!=null);
+			Contract.Ensures(Id.Equals(e.From.Id));
+			Contract.Ensures(IsNeighborOut(e.To.Id));
+			edgesOut.Add(e.To.Id,e);
+		}
         
         public bool RemoveEdgeIn(Edge e)=>
 		RemoveEdgeIn(e.From.Id);
 
-        public bool RemoveEdgeIn(string uId)=>
-        edgesIn.Remove(uId);
+		public bool RemoveEdgeIn(string uId){
+			Contract.Requires(uId != null);
+			return edgesIn.Remove(uId);
+		}
         
 		public bool RemoveEdgeOut(Edge e)=>
-        RemoveEdgeOut(e.To.Id);
+        RemoveEdgeOut(e?.To?.Id);
 
-        public bool RemoveEdgeOut(string uId)=>
-		edgesOut.Remove(uId);
+		public bool RemoveEdgeOut(string uId){
+			Contract.Requires(uId != null);
+			return edgesOut.Remove(uId);
+		}
 
 		public bool IsNeighborOut(string uId)=>
 		edgesOut.ContainsKey(uId);
@@ -63,10 +76,16 @@ namespace EvImps.Graphs
 		public bool IsNeighborIn(string uId)=>
         edgesIn.ContainsKey(uId);
 
-		public Edge GetEdgeIn(string vId)=>
-		edgesIn[vId];
+		public Edge GetEdgeIn(string vId){
+			Contract.Requires(vId!=null);
+			Contract.Requires(IsNeighborIn(vId));
+			return edgesIn[vId];
+		}
 
-		public Edge GetEdgeOut(string vId)=>
-        edgesOut[vId];
+		public Edge GetEdgeOut(string vId){
+			Contract.Requires(vId!=null);
+			Contract.Requires(IsNeighborOut(vId));
+			return edgesOut[vId];
+		}
     }
 }

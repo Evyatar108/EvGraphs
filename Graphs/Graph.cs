@@ -3,6 +3,7 @@ using System.Collections;
 using System.Linq;
 using SortedStructures;
 using System;
+using System.Diagnostics.Contracts;
 
 namespace EvImps.Graphs
 {
@@ -40,18 +41,21 @@ namespace EvImps.Graphs
 		}
 
 		public bool ContainsVerticle(Verticle v)=>
-		    ContainsVerticle(v.Id);
-        
-		public bool ContainsVerticle(string vId)=>
-		    verticles.ContainsKey(vId);
+			ContainsVerticle(v?.Id);
+
+		public bool ContainsVerticle(string vId){
+			Contract.Requires(vId!=null);
+		    return verticles.ContainsKey(vId);
+		}
 
 		public bool AddVerticle(Verticle v)=>
-			AddVerticle(v.Id);
-
+			AddVerticle(v?.Id);
+        
 		public bool AddVerticle(string vId)
 		{
-			Verticle v;
-			if (verticles.TryGetValue(vId,out v))
+			Contract.Requires(vId!=null);
+			Contract.Ensures(ContainsVerticle(vId));
+			if (ContainsVerticle(vId))
 				return false;
 			numOfVerticles++;
 			verticles[vId] = new Verticle(vId);
@@ -60,10 +64,11 @@ namespace EvImps.Graphs
 
 		public bool RemoveVerticle(string vId)
 		{
-			Verticle v;
-			List<Edge> edgesToRemove = new List<Edge>();
-			if(!verticles.TryGetValue(vId,out v))
+			Contract.Requires(vId!=null);
+			Contract.Ensures(!ContainsVerticle(vId));
+			if(!verticles.TryGetValue(vId,out Verticle v))
 				return false;
+			List<Edge> edgesToRemove = new List<Edge>();
 			foreach(Edge e in v.Edges)
 				edgesToRemove.Add(e);
 			foreach(Edge e in edgesToRemove)
@@ -72,23 +77,29 @@ namespace EvImps.Graphs
 			return true;
 		}
         
-		public bool ContainsEdge(Edge e)=> ContainsEdge(e.From.Id,e.To.Id);
+		public bool ContainsEdge(Edge e)=> ContainsEdge(e?.From?.Id,e?.To?.Id);
         
-		public bool ContainsEdge(string vId,string uId)=>
-			ContainsVerticle(vId) && ContainsVerticle(uId) 
+		public bool ContainsEdge(string vId,string uId){
+			Contract.Requires(vId!=null);
+			Contract.Requires(uId!=null);
+			return ContainsVerticle(vId) && ContainsVerticle(uId) 
 				&& GetVerticle(vId).IsNeighborOut(uId);
+		}
 
 		public bool ContainsRevEdge(Edge e)=>
-		    ContainsEdge(e.To.Id,e.From.Id);
+		    ContainsEdge(e?.To?.Id,e?.From?.Id);
 
 		public bool ContainsRevEdge(string vId,string uId)=>
         ContainsEdge(uId,vId);
         
 		public bool AddEdge(Edge e)=>
-			AddEdge(e.From.Id,e.To.Id,e.Weight);
+			AddEdge(e?.From?.Id,e?.To?.Id, e?.Weight ?? 0);
 
 		public bool AddEdge(string vId, string uId, int w=1)
         {
+			Contract.Requires(vId!=null);
+			Contract.Requires(uId!=null);
+			Contract.Ensures(ContainsEdge(vId,uId));
 			if(ContainsEdge(vId,uId))
 				return false;
 			AddVerticle(vId);
@@ -107,15 +118,21 @@ namespace EvImps.Graphs
 			return true;
         }
 
-		public Edge GetEdge(string vId,string uId)=>
-			GetVerticle(vId).GetEdgeOut(uId);
-        
+		public Edge GetEdge(string vId,string uId){
+			Contract.Requires(vId!=null);
+			Contract.Requires(uId!=null);
+			Contract.Requires(ContainsEdge(vId,uId));
+			return GetVerticle(vId).GetEdgeOut(uId);
+		}
 
 		public bool RemoveEdge(Edge e)=>
-		    RemoveEdge(e.From.Id,e.To.Id);
+		    RemoveEdge(e?.From?.Id,e?.To?.Id);
 
 		public bool RemoveEdge(string vId, string uId)
 		{
+			Contract.Requires(vId!=null);
+			Contract.Requires(uId!=null);
+			Contract.Ensures(!ContainsEdge(vId,uId));
 			if(!ContainsEdge(vId,uId))
 				return false;
 			Verticle v = GetVerticle(vId);
@@ -130,9 +147,13 @@ namespace EvImps.Graphs
 			return true;
 		}
 
-		public Verticle GetVerticle(string vId)=>
-			verticles[vId];
-        
+		public Verticle GetVerticle(string vId)
+		{
+			Contract.Requires(vId!=null);
+			Contract.Requires(ContainsVerticle(vId));
+			return verticles[vId];
+		}
+
 		private void ResetStats()
 		{
 			foreach (Verticle v in verticles.Values)
@@ -143,11 +164,12 @@ namespace EvImps.Graphs
 		    verticles.Values.GetEnumerator();
 
         
-		public void Bfs(string s)
+		public void Bfs(string sId)
 		{
+			Contract.Requires(sId!=null);
 			ResetStats();
 			var queue = new Queue<Verticle>();
-			Verticle v = GetVerticle(s);
+			Verticle v = GetVerticle(sId);
 			v.Dist = 0;
 			v.Visited = true;
 			queue.Enqueue(v);
@@ -179,6 +201,8 @@ namespace EvImps.Graphs
 
 		public void Dfs(string sId)
 		{
+			Contract.Requires(sId!=null);
+			Contract.Requires(ContainsVerticle(sId));
 			ResetStats();
 			Verticle s = GetVerticle(sId);
 			s.Dist=0;
@@ -204,7 +228,7 @@ namespace EvImps.Graphs
 
 		public Graph GetMST() //Using Prim
 		{
-			
+			Contract.Ensures(Contract.Result<Graph>().IsTree());
 			if(IsDirected)
 				throw new NotSupportedException("No support for directed graphs");
 			return Prim();
@@ -234,6 +258,8 @@ namespace EvImps.Graphs
 
 		public bool IsConnected()
 		{
+			if(NumOfVerticles==0)
+				return true;
 			Dfs(verticles.First().Value.Id);
 			foreach(Verticle v in Verticles)
 				if(!v.Visited)
@@ -252,10 +278,12 @@ namespace EvImps.Graphs
 			return e;
 		}
 
-		public void Dijkstra(string s) // Complexity: O(V^2)
+		public void Dijkstra(string sId) // Complexity: O(V^2)
 		{
+			Contract.Requires(sId!=null);
+			Contract.Requires(ContainsVerticle(sId));
 			ResetStats();
-			Verticle v = verticles[s];
+			Verticle v = verticles[sId];
             v.Visited = true;
 			v.Dist=0;
 			RelaxNeighbores(v);
@@ -294,6 +322,7 @@ namespace EvImps.Graphs
 
 		public void BellmanFord(string sId)
 		{
+			Contract.Requires(sId!=null);
 			ResetStats();
 			GetVerticle(sId).Dist = 0;
 			for(int i=0;i<numOfVerticles-1;i++)
@@ -312,10 +341,14 @@ namespace EvImps.Graphs
 
 		public List<Edge> GetShortestPath(string sId,string tId,bool statsReady=false)
 		{
+			Contract.Requires(sId!=null);
+			Contract.Requires(ContainsVerticle(sId));
+			Contract.Requires(tId!=null);
+			Contract.Requires(ContainsVerticle(tId));
 			if(!statsReady)
 				Bfs(sId);
-			Verticle s = verticles[sId];
-			Verticle v = verticles[tId];
+			Verticle s = GetVerticle(sId);
+			Verticle v = GetVerticle(tId);
 			List<Edge> path = new List<Edge>();
 			while(v!=s)
 			{
@@ -333,16 +366,12 @@ namespace EvImps.Graphs
                 throw new NotSupportedException("No support for directed graphs");
 			if(NumOfEdges != 2*( NumOfVerticles-1))
 				return false;
-			
-			Bfs(Verticles.First().Id);
-			foreach(Verticle v in Verticles)
-				if(!v.Visited)
-					return false;
-			return true;
+			return IsConnected();
 		}
 
 		public Graph GetSubGraph(IEnumerable<Edge> edges )
 		{
+			Contract.Requires(edges!=null);
 			Graph g = new Graph(IsDirected);
 			foreach(Edge e in edges)
 				g.AddEdge(e);
@@ -351,6 +380,7 @@ namespace EvImps.Graphs
 
 		public Graph GetSubGraph(IEnumerable<Verticle> verts)
         {
+			Contract.Requires(verts!=null);
 			Graph g = new Graph(IsDirected);
 			foreach(Verticle v in verts)
 				g.AddVerticle(v);
