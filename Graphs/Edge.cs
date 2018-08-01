@@ -1,14 +1,13 @@
-﻿using System;
-using System.Diagnostics.Contracts;
+﻿using System.Diagnostics.Contracts;
 
 namespace EvImps.Graphs
 {
-	public class Edge : IComparable<Edge> //Undirected
-    {
-        public Verticle From { get; }
-        public Verticle To{ get; }
+	public class Edge<TVerticle> : IEdge<TVerticle> where TVerticle:IVerticle
+	{
+		public IVerticle From { get; }
+		public IVerticle To{ get; }
         public int Weight { get; }
-        public Edge(Verticle v, Verticle u, int w=1)
+		public Edge(IVerticle v, IVerticle u, int w=1)
         {
 			Contract.Requires(v!=null);
 			Contract.Requires(u!=null);
@@ -17,19 +16,16 @@ namespace EvImps.Graphs
             Weight = w;
         }
 
+		public int CompareTo(IEdge v)=>
+        Weight.CompareTo(v.Weight);
+
 		public override string ToString()
         {
 			return $"({From.Id},{To.Id})";
         }
 
-        public int CompareTo(Edge e)=>
-        Weight.CompareTo(e.Weight);
-
 		public EdgeKey GetKey()=>
         new EdgeKey(From.Id,To.Id);
-
-		public EdgeKey GetRevKey()=>
-        new EdgeKey(To.Id,From.Id);
 	}
 
 
@@ -44,7 +40,9 @@ namespace EvImps.Graphs
             this.to = to;
         }
 
-
+		public EdgeKey Rev()=>
+		new EdgeKey(to,from);
+        
 
 		public override int GetHashCode()
         {

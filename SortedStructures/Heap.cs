@@ -22,12 +22,12 @@ namespace SortedStructures
 		{
 		}
 
-		public Heap(ICollection<T> l) : this(l.Count)
+		public Heap(IEnumerable<T> l) : this(l.Count())
         {
 			AddRange(l);
         }
 
-		public void AddRange(ICollection<T> l)
+		public void AddRange(IEnumerable<T> l)
 		{
 			foreach(T x in l)
                 Insert(x);

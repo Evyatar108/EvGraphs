@@ -7,106 +7,93 @@ using System.Diagnostics.Contracts;
 
 namespace EvImps.Graphs
 {
-	public class Graph : IEnumerable
+	public class Graph<TId,TData> : IGraph<TId,TData>
 	{
-		public bool IsDirected {get;set;}
-		internal Dictionary<string, Verticle> verticles;
-		public IEnumerable<Verticle> Verticles { get{ return verticles.Values;}}
-		public IEnumerable<Edge> Edges 
+		public bool IsDirected {get;}
+		private Dictionary<TId, IVerticle<TId,TData>> verticles;
+		public IEnumerable<IVerticle<TId,TData>> Verticles { get{ return verticles.Values;}}
+		public IEnumerable<IEdge<IVerticle<TId,TData>>> Edges 
 		{
 			get 
 			{ 
-				foreach(Verticle v in verticles.Values)
-					foreach(Edge e in v.EdgesOut)
+				foreach(var v in verticles.Values)
+					foreach(var e in v.EdgesOut)
 						yield return e;
 			}
 		}
 
-		public int NumOfEdges
-		{
-			get
-			{
-				return Verticles.Aggregate(0,(sum,v)=> sum+ v.EdgesOut.Count);
-			}
-		}
+		public int NumOfEdges{get; private set;}
 
 		int numOfVerticles;
 		public int NumOfVerticles { get { return numOfVerticles; } }
         
 		public Graph(bool isDirected=true)
 		{
-			verticles = new Dictionary<string, Verticle>();
+			verticles = new Dictionary<TId, IVerticle<TId,TData>>();
 			numOfVerticles = 0;
 			IsDirected = isDirected;
 		}
 
-		public bool ContainsVerticle(Verticle v)=>
+		public bool ContainsVerticle(IVerticle<TId,TData> v)=>
 			ContainsVerticle(v?.Id);
 
-		public bool ContainsVerticle(string vId){
-			Contract.Requires(vId!=null);
+		public bool ContainsVerticle(TId vId){
 		    return verticles.ContainsKey(vId);
 		}
-
-		public bool AddVerticle(Verticle v)=>
+        
+		public bool AddVerticle(IVerticle<TId,TData> v)=>
 			AddVerticle(v?.Id);
         
-		public bool AddVerticle(string vId)
+		public bool AddVerticle(TId vId)
 		{
-			Contract.Requires(vId!=null);
 			Contract.Ensures(ContainsVerticle(vId));
 			if (ContainsVerticle(vId))
 				return false;
 			numOfVerticles++;
-			verticles[vId] = new Verticle(vId);
+			verticles[vId] = new Verticle<TId,TData>(vId);
 			return true;
 		}
 
-		public bool RemoveVerticle(string vId)
+		public bool RemoveVerticle(TId vId)
 		{
-			Contract.Requires(vId!=null);
 			Contract.Ensures(!ContainsVerticle(vId));
-			if(!verticles.TryGetValue(vId,out Verticle v))
+			if(!verticles.TryGetValue(vId,out IVerticle<TId,TData> v))
 				return false;
-			List<Edge> edgesToRemove = new List<Edge>();
-			foreach(Edge e in v.Edges)
+			List<IEdge> edgesToRemove = new List<IEdge>();
+			foreach(IEdge e in v.Edges)
 				edgesToRemove.Add(e);
-			foreach(Edge e in edgesToRemove)
+			foreach(IEdge e in edgesToRemove)
 				RemoveEdge(e);
 			verticles.Remove(vId);
 			return true;
 		}
         
-		public bool ContainsEdge(Edge e)=> ContainsEdge(e?.From?.Id,e?.To?.Id);
+		public bool ContainsEdge(IEdge e)=> ContainsEdge(e.From.Id,e.To.Id);
         
-		public bool ContainsEdge(string vId,string uId){
-			Contract.Requires(vId!=null);
-			Contract.Requires(uId!=null);
+		public bool ContainsEdge(TId vId,TId uId){
 			return ContainsVerticle(vId) && ContainsVerticle(uId) 
 				&& GetVerticle(vId).IsNeighborOut(uId);
 		}
 
-		public bool ContainsRevEdge(Edge e)=>
+		public bool ContainsRevEdge(IEdge e)=>
 		    ContainsEdge(e?.To?.Id,e?.From?.Id);
 
-		public bool ContainsRevEdge(string vId,string uId)=>
+		public bool ContainsRevEdge(TId vId,TId uId)=>
         ContainsEdge(uId,vId);
         
-		public bool AddEdge(Edge e)=>
+		public bool AddEdge(IEdge e)=>
 			AddEdge(e?.From?.Id,e?.To?.Id, e?.Weight ?? 0);
 
-		public bool AddEdge(string vId, string uId, int w=1)
+		public bool AddEdge(TId vId, TId uId, int w=1)
         {
-			Contract.Requires(vId!=null);
-			Contract.Requires(uId!=null);
 			Contract.Ensures(ContainsEdge(vId,uId));
 			if(ContainsEdge(vId,uId))
 				return false;
 			AddVerticle(vId);
             AddVerticle(uId);
-			Verticle v = GetVerticle(vId);
-            Verticle u = GetVerticle(uId);
-            Edge e = new Edge(v,u, w);
+			IVerticle<TId,TData> v = GetVerticle(vId);
+			IVerticle<TId,TData> u = GetVerticle(uId);
+            IEdge e = new Edge(v,u, w);
             v.AddOutNeighbor(e);
             u.AddInNeighbor(e);
 			if(!IsDirected)
@@ -115,28 +102,25 @@ namespace EvImps.Graphs
 				v.AddInNeighbor(e);
                 u.AddOutNeighbor(e);
 			}
+			NumOfEdges++;
 			return true;
         }
 
-		public Edge GetEdge(string vId,string uId){
-			Contract.Requires(vId!=null);
-			Contract.Requires(uId!=null);
+		public IEdge GetEdge(TId vId,TId uId){
 			Contract.Requires(ContainsEdge(vId,uId));
 			return GetVerticle(vId).GetEdgeOut(uId);
 		}
 
-		public bool RemoveEdge(Edge e)=>
+		public bool RemoveEdge(IEdge e)=>
 		    RemoveEdge(e?.From?.Id,e?.To?.Id);
 
-		public bool RemoveEdge(string vId, string uId)
+		public bool RemoveEdge(TId vId, TId uId)
 		{
-			Contract.Requires(vId!=null);
-			Contract.Requires(uId!=null);
 			Contract.Ensures(!ContainsEdge(vId,uId));
 			if(!ContainsEdge(vId,uId))
 				return false;
-			Verticle v = GetVerticle(vId);
-			Verticle u = GetVerticle(uId);
+			IVerticle v = GetVerticle(vId);
+			IVerticle u = GetVerticle(uId);
 			v.RemoveEdgeOut(uId);
 			u.RemoveEdgeIn(vId);
 			if(!IsDirected)
@@ -147,42 +131,42 @@ namespace EvImps.Graphs
 			return true;
 		}
 
-		public Verticle GetVerticle(string vId)
+		public IVerticle GetVerticle(TId vId)
 		{
 			Contract.Requires(vId!=null);
 			Contract.Requires(ContainsVerticle(vId));
 			return verticles[vId];
 		}
 
-		private void ResetStats()
+		public void ResetStats()
 		{
 			foreach (Verticle v in verticles.Values)
 				v.ResetStats();
 		}
            
 		IEnumerator IEnumerable.GetEnumerator() => 
-		    verticles.Values.GetEnumerator();
-
+		                       verticles.Values.GetEnumerator();
         
-		public void Bfs(string sId)
+        
+		public void Bfs(TId sId)
 		{
 			Contract.Requires(sId!=null);
 			ResetStats();
-			var queue = new Queue<Verticle>();
-			Verticle v = GetVerticle(sId);
+			var queue = new Queue<IVerticle>();
+			IVerticle<TId,TData> v = GetVerticle(sId);
 			v.Dist = 0;
-			v.Visited = true;
+			v.IsVisited = true;
 			queue.Enqueue(v);
-			Verticle u;
+			IVerticle<TId,TData> u;
 			while (queue.Count > 0)
 			{
 				v = queue.Dequeue();
 				foreach (Edge e in v.EdgesOut)
 				{
 					u = e.To;
-					if (!u.Visited)
+					if (!u.IsVisited)
 					{
-						u.Visited = true;
+						u.IsVisited = true;
 						u.Dist = v.Dist + 1;
 						u.ParentEdge = e;
 						queue.Enqueue(u);
@@ -194,29 +178,29 @@ namespace EvImps.Graphs
 		public void FullDfs()
 		{
 			ResetStats();
-			foreach (Verticle v in Verticles)
-				if (!v.Visited)
+			foreach (IVerticle<TId,TData> v in Verticles)
+				if (!v.IsVisited)
 					Dfs(v);
 		}
 
-		public void Dfs(string sId)
+		public void Dfs(TId sId)
 		{
 			Contract.Requires(sId!=null);
 			Contract.Requires(ContainsVerticle(sId));
 			ResetStats();
-			Verticle s = GetVerticle(sId);
+			IVerticle s = GetVerticle(sId);
 			s.Dist=0;
 			Dfs(s);
 		}
 
-		private void Dfs(Verticle v)
+		private void Dfs(IVerticle<TId,TData> v)
 		{
-			v.Visited = true;
-			Verticle u;
+			v.IsVisited = true;
+			IVerticle u;
 			foreach (Edge e in v.EdgesOut)
 			{
 				u = e.To;
-				if (!u.Visited)
+				if (!u.IsVisited)
 				{
 					u.ParentEdge = e;
 					u.Dist = v.Dist+1;
@@ -226,7 +210,7 @@ namespace EvImps.Graphs
 		}
 
 
-		public Graph GetMST() //Using Prim
+		public IGraph<TId,TData> GetMST() //Using Prim
 		{
 			Contract.Ensures(Contract.Result<Graph>().IsTree());
 			if(IsDirected)
@@ -234,23 +218,23 @@ namespace EvImps.Graphs
 			return Prim();
 		}
 
-		private Graph Prim()
+		private IGraph<TId,TData> Prim()
 		{
 			if(!IsConnected())
                 throw new InvalidOperationException("Graph is not connected");
 			ResetStats();
-            Verticle v = verticles.First().Value;
-            v.Visited = true;
-            Edge[] treeEdges = new Edge[NumOfVerticles-1];
+            IVerticle v = verticles.First().Value;
+            v.IsVisited = true;
+            IEdge[] treeEdges = new IEdge[NumOfVerticles-1];
             int teIndex= 0;
-            var edges = new Heap<Edge>(v.EdgesOut);
-            Edge e;
+            var edges = new Heap<IEdge>(v.EdgesOut);
+            IEdge e;
             while (teIndex<numOfVerticles-1)
             {
                 e = GetMinUnvisitedEdge(edges);
                 treeEdges[teIndex++] = e;
                 v = e.To;
-                v.Visited=true;
+                v.IsVisited=true;
                 edges.AddRange(v.EdgesOut);
             }
             return GetSubGraph(treeEdges);
@@ -262,18 +246,18 @@ namespace EvImps.Graphs
 				return true;
 			Dfs(verticles.First().Value.Id);
 			foreach(Verticle v in Verticles)
-				if(!v.Visited)
+				if(!v.IsVisited)
 					return false;
 			return true;
 		}
 
-		private Edge GetMinUnvisitedEdge(Heap<Edge> edges){
+		private IEdge GetMinUnvisitedEdge(Heap<IEdge> edges){
 			bool found = false;
-			Edge e=null;
+			IEdge e=null;
 			while(!found)
 			{
 				e = edges.ExtractMin();
-				found = !e.To.Visited;
+				found = !e.To.IsVisited;
 			}
 			return e;
 		}
@@ -283,38 +267,38 @@ namespace EvImps.Graphs
 			Contract.Requires(sId!=null);
 			Contract.Requires(ContainsVerticle(sId));
 			ResetStats();
-			Verticle v = verticles[sId];
-            v.Visited = true;
+			IVerticle v = verticles[sId];
+            v.IsVisited = true;
 			v.Dist=0;
 			RelaxNeighbores(v);
 			for(int i=1;i<numOfVerticles;i++)
             {
 				v = FindMinUnvisitedVerticle();
-                v.Visited=true;
+                v.IsVisited=true;
 				RelaxNeighbores(v); 
             }
 		}
 
-		private static void RelaxNeighbores(Verticle v)
+		private static void RelaxNeighbores(IVerticle v)
 		{
 			foreach(Edge e in v.EdgesOut)
 				Relax(e);
 		}
 
-		private static void Relax(Edge e)
+		private static void Relax(IEdge e)
 		{
-			Verticle v = e.From;
-			Verticle u = e.To;
+			IVerticle v = e.From;
+			IVerticle u = e.To;
 			if(u.Dist > v.Dist + e.Weight){
 				u.Dist = v.Dist + e.Weight;
 				u.ParentEdge = e;
 			}
 		}
 
-		private Verticle FindMinUnvisitedVerticle(){
+		private IVerticle FindMinUnvisitedVerticle(){
 			Verticle res = null;
 			foreach(Verticle v in verticles.Values)
-				if(!v.Visited && (res==null || res.Dist > v.Dist) )
+				if(!v.IsVisited && (res==null || res.Dist > v.Dist) )
 					res = v;
             return res;
         }
@@ -339,7 +323,7 @@ namespace EvImps.Graphs
 			return false;
 		}
 
-		public List<Edge> GetShortestPath(string sId,string tId,bool statsReady=false)
+		public IList<IEdge> GetShortestPath(string sId,string tId,bool statsReady=false)
 		{
 			Contract.Requires(sId!=null);
 			Contract.Requires(ContainsVerticle(sId));
@@ -347,9 +331,9 @@ namespace EvImps.Graphs
 			Contract.Requires(ContainsVerticle(tId));
 			if(!statsReady)
 				Bfs(sId);
-			Verticle s = GetVerticle(sId);
-			Verticle v = GetVerticle(tId);
-			List<Edge> path = new List<Edge>();
+			IVerticle s = GetVerticle(sId);
+			IVerticle v = GetVerticle(tId);
+			List<IEdge> path = new List<IEdge>();
 			while(v!=s)
 			{
 				path.Add(v.ParentEdge);
@@ -369,7 +353,7 @@ namespace EvImps.Graphs
 			return IsConnected();
 		}
 
-		public Graph GetSubGraph(IEnumerable<Edge> edges )
+		public IGraph GetSubGraph(IEnumerable<IEdge> edges )
 		{
 			Contract.Requires(edges!=null);
 			Graph g = new Graph(IsDirected);
@@ -378,7 +362,7 @@ namespace EvImps.Graphs
 			return g;
 		}
 
-		public Graph GetSubGraph(IEnumerable<Verticle> verts)
+		public IGraph GetSubGraph(IEnumerable<IVerticle> verts)
         {
 			Contract.Requires(verts!=null);
 			Graph g = new Graph(IsDirected);

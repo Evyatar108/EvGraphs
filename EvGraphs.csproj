@@ -47,7 +47,6 @@ Dinitz</Description>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Graphs\Graph.cs" />
-    <Compile Include="Graphs\FlowNetwork.cs" />
     <Compile Include="SortedStructures\Heap.cs" />
     <Compile Include="Graphs\Verticle.cs" />
     <Compile Include="Graphs\Edge.cs" />
@@ -57,12 +56,27 @@ Dinitz</Description>
     <Compile Include="Graphs\UnitTest\FlowNetworkTest.cs" />
     <Compile Include="SortedStructures\UnitTest\HeapTest.cs" />
     <Compile Include="MainClass.cs" />
+    <Compile Include="Graphs\IEdge.cs" />
+    <Compile Include="Graphs\IVerticle.cs" />
+    <Compile Include="Graphs\IGraph.cs" />
+    <Compile Include="Graphs\FlowNetwork.cs" />
+    <Compile Include="Graphs\IFlowNetwork.cs" />
+    <Compile Include="Graphs\Algorithms\Search\BreadthFirstSearch.cs" />
+    <Compile Include="Graphs\Algorithms\Search\DepthFirstSearch.cs" />
+    <Compile Include="Graphs\Algorithms\Search\ISearchAlgorithm.cs" />
+    <Compile Include="Graphs\Algorithms\MinimumSpanningTree\IMinimumSpanningTreeAlgorithm.cs" />
+    <Compile Include="Graphs\Algorithms\MinimumSpanningTree\Prim.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Graphs\" />
     <Folder Include="SortedStructures\" />
     <Folder Include="Graphs\UnitTest\" />
     <Folder Include="SortedStructures\UnitTest\" />
+    <Folder Include="Graphs\Algorithms\" />
+    <Folder Include="Graphs\Algorithms\MinimumSpanningTree\" />
+    <Folder Include="Graphs\Algorithms\Search\" />
+    <Folder Include="Graphs\Algorithms\ShortestPath\" />
+    <Folder Include="Graphs\Algorithms\MaximumFlow\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
