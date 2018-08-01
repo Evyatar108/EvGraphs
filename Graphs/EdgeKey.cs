@@ -12,7 +12,7 @@ namespace EvImps.Graphs
             this.toId = toId;
         }
 
-        public EdgeKey Rev() =>
+		public EdgeKey Reverse() =>
         new EdgeKey(toId, fromId);
 
 
@@ -29,7 +29,7 @@ namespace EvImps.Graphs
 
         public override bool Equals(object obj) =>
         obj is EdgeKey
-        && ((EdgeKey)obj).fromId == fromId
-                             && ((EdgeKey)obj).toId == toId;
+		&& ((EdgeKey)obj).fromId.Equals(fromId)
+		                 && ((EdgeKey)obj).toId.Equals(toId);
     }
 }

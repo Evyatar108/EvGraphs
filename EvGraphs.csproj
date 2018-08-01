@@ -48,7 +48,6 @@ Dinitz</Description>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Graphs\Graph.cs" />
     <Compile Include="SortedStructures\Heap.cs" />
-    <Compile Include="Graphs\Verticle.cs" />
     <Compile Include="Graphs\Edge.cs" />
     <Compile Include="Graphs\UnitTest\VerticleTest.cs" />
     <Compile Include="Graphs\UnitTest\EdgeTest.cs" />
@@ -57,7 +56,6 @@ Dinitz</Description>
     <Compile Include="SortedStructures\UnitTest\HeapTest.cs" />
     <Compile Include="MainClass.cs" />
     <Compile Include="Graphs\IEdge.cs" />
-    <Compile Include="Graphs\IVerticle.cs" />
     <Compile Include="Graphs\IGraph.cs" />
     <Compile Include="Graphs\FlowNetwork.cs" />
     <Compile Include="Graphs\IFlowNetwork.cs" />

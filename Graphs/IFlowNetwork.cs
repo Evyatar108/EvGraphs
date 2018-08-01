@@ -3,5 +3,6 @@ namespace EvImps.Graphs
 {
     public interface IFlowNetwork
     {
+		
     }
 }

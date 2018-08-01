@@ -3,11 +3,11 @@
 namespace EvImps.Graphs
 {
    
-	public interface IEdge<TId,TData> : IComparable<IEdge<TId,TData>>
+	public interface IEdge<TVerticle> : IComparable<IEdge<TVerticle>>
 
 	{
-		IVerticle<TId,TData> From { get; }
-		IVerticle<TId,TData> To { get; }
+		TVerticle From { get; }
+		TVerticle To { get; }
 		int Weight { get; }
         EdgeKey GetKey();
     }

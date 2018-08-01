@@ -8,7 +8,7 @@ namespace EvImps.Graphs
     public class FlowNetwork
     {
 		public Graph G {get;private set;}
-		public Func<Edge, int> c;
+		public Func<Edge,int> c;
 		public string sId;
 		public string tId;
 
