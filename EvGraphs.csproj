@@ -66,6 +66,7 @@ Dinitz</Description>
     <Compile Include="Graphs\Algorithms\Search\ISearchAlgorithm.cs" />
     <Compile Include="Graphs\Algorithms\MinimumSpanningTree\IMinimumSpanningTreeAlgorithm.cs" />
     <Compile Include="Graphs\Algorithms\MinimumSpanningTree\Prim.cs" />
+    <Compile Include="Graphs\EdgeKey.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Graphs\" />

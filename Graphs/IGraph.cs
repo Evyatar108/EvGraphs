@@ -2,41 +2,30 @@
 
 namespace EvImps.Graphs
 {
-	public interface IGraph<TVerticle> : IEnumerable<TVerticle>
-		where TVerticle:IVerticle
+	public interface IGraph<TId,TData>
     {
         bool IsDirected{get;}
-		IEnumerable<TVerticle> Verticles{get;}
-		IEnumerable<IEdge<TVerticle>> Edges{get;}
+		IEnumerable<IVerticle<TId,TData>> Verticles{get;}
+		IEnumerable<IEdge<TId,TData>> Edges{get;}
         int NumOfEdges{get;}
         int NumOfVerticles { get;}
-		bool ContainsVerticle(TVerticle v);
-        bool ContainsVerticle(string vId);
-		bool AddVerticle(TVerticle v);
-        bool AddVerticle(string vId);
-        bool RemoveVerticle(string vId);
-		bool ContainsEdge(IEdge<TVerticle> e);
-        bool ContainsEdge(string vId,string uId);
-		bool ContainsRevEdge(IEdge<TVerticle> e);
-        bool ContainsRevEdge(string vId,string uId);
-		bool AddEdge(IEdge<TVerticle> e);
-        bool AddEdge(string vId, string uId, int w);
-		IEdge<TVerticle> GetEdge(string vId,string uId);
-		bool RemoveEdge(IEdge<TVerticle> e);
-        bool RemoveEdge(string vId, string uId);
-		TVerticle GetVerticle(string vId);
+		bool ContainsVerticle(IVerticle<TId,TData> v);
+		bool ContainsVerticle(TId vId);
+		bool AddVerticle(IVerticle<TId,TData> v);
+		bool AddVerticle(TId vId);
+		bool RemoveVerticle(TId vId);
+		bool ContainsEdge(IEdge<TId,TData> e);
+		bool ContainsEdge(TId vId,TId uId);
+		bool ContainsRevEdge(IEdge<TId,TData> e);
+		bool ContainsRevEdge(TId vId,TId uId);
+		bool AddEdge(IEdge<TId,TData> e);
+		bool AddEdge(TId vId, TId uId, int w);
+		IEdge<TId,TData> GetEdge(TId vId,TId uId);
+		bool RemoveEdge(IEdge<TId,TData> e);
+		bool RemoveEdge(TId vId, TId uId);
+		IVerticle<TId,TData> GetVerticle(TId vId);
         void ResetStats();
-        void Bfs(string sId);
-        void FullDfs();
-        void Dfs(string sId);
-		IGraph<TVerticle> GetMST();
-        bool IsConnected();
-        void Dijkstra(string sId);
-        void BellmanFord(string sId);
-        bool HasNegativeCycle();
-		IList<IEdge<TVerticle>> GetShortestPath(string sId,string tId,bool statsReady);
-        bool IsTree();
-		IGraph<TVerticle> GetSubGraph(IEnumerable<IEdge<TVerticle>> edges );
-		IGraph<TVerticle> GetSubGraph(IEnumerable<TVerticle> verts);
+		IGraph<TId,TData> GetSubGraph(IEnumerable<IEdge<TId,TData>> edges );
+		IGraph<TId,TData> GetSubGraph(IEnumerable<IVerticle<TId,TData>> verts);
     }
 }
