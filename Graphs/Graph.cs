@@ -35,14 +35,14 @@ namespace EvImps.Graphs
 		}
 
 		public bool ContainsVerticle(IVerticle<TId,TData> v)=>
-			ContainsVerticle(v?.Id);
+			ContainsVerticle(v.Id);
 
 		public bool ContainsVerticle(TId vId){
 		    return verticles.ContainsKey(vId);
 		}
         
 		public bool AddVerticle(IVerticle<TId,TData> v)=>
-			AddVerticle(v?.Id);
+			AddVerticle(v.Id);
         
 		public bool AddVerticle(TId vId)
 		{
@@ -68,21 +68,21 @@ namespace EvImps.Graphs
 			return true;
 		}
         
-		public bool ContainsEdge(IEdge e)=> ContainsEdge(e.From.Id,e.To.Id);
+		public bool ContainsEdge(IEdge<IVerticle<TId,TData>> e)=> ContainsEdge(e.From.Id,e.To.Id);
         
 		public bool ContainsEdge(TId vId,TId uId){
 			return ContainsVerticle(vId) && ContainsVerticle(uId) 
 				&& GetVerticle(vId).IsNeighborOut(uId);
 		}
 
-		public bool ContainsRevEdge(IEdge e)=>
-		    ContainsEdge(e?.To?.Id,e?.From?.Id);
+		public bool ContainsRevEdge(IEdge<IVerticle<TId,TData>> e)=>
+		    ContainsEdge(e.To.Id,e.From.Id);
 
 		public bool ContainsRevEdge(TId vId,TId uId)=>
         ContainsEdge(uId,vId);
         
-		public bool AddEdge(IEdge e)=>
-			AddEdge(e?.From?.Id,e?.To?.Id, e?.Weight ?? 0);
+		public bool AddEdge(IEdge<IVerticle<TId,TData>> e)=>
+			AddEdge(e.From.Id,e.To.Id, e.Weight ?? 0);
 
 		public bool AddEdge(TId vId, TId uId, int w=1)
         {

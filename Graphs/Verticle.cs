@@ -20,13 +20,12 @@ namespace EvImps.Graphs
 
 
         public int Dist { get; set; } //may be used as a weight of a path
-        public IEdge ParentEdge { get; set; }
+		public IEdge<IVerticle<TId,TData>> ParentEdge { get; set; }
         public bool IsVisited { get; set; }
 		public TId Id { get; }
 
 		public Verticle(TId id)
         {
-            Contract.Requires(id!=null);
 			edgesIn = new Dictionary<TId,IEdge<IVerticle<TId,TData>>>();
 			edgesOut = new Dictionary<TId,IEdge<IVerticle<TId,TData>>>();
             IsVisited = false;
@@ -58,15 +57,13 @@ namespace EvImps.Graphs
         RemoveEdgeIn(e.From.Id);
 
 		public bool RemoveEdgeIn(TId uId){
-            Contract.Requires(uId != null);
             return edgesIn.Remove(uId);
         }
         
 		public bool RemoveEdgeOut(IEdge<IVerticle<TId,TData>> e)=>
-        RemoveEdgeOut(e?.To?.Id);
+        RemoveEdgeOut(e.To.Id);
 
 		public bool RemoveEdgeOut(TId uId){
-            Contract.Requires(uId != null);
             return edgesOut.Remove(uId);
         }
 
@@ -77,13 +74,11 @@ namespace EvImps.Graphs
         edgesIn.ContainsKey(uId);
 
 		public IEdge<IVerticle<TId,TData>> GetEdgeIn(TId vId){
-            Contract.Requires(vId!=null);
             Contract.Requires(IsNeighborIn(vId));
             return edgesIn[vId];
         }
 
 		public IEdge<IVerticle<TId,TData>> GetEdgeOut(TId vId){
-            Contract.Requires(vId!=null);
             Contract.Requires(IsNeighborOut(vId));
             return edgesOut[vId];
         }
